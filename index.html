@@ -1,0 +1,783 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favicon Generator - Tạo favicon miễn phí</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+        }
+
+        .upload-area {
+            border: 2px dashed #94a3b8;
+            transition: 0.2s;
+        }
+
+        .upload-area.dragover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .preview-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            background: white;
+            text-align: center;
+        }
+
+        .preview-bg {
+            background-color: #e2e8f0;
+            background-image:
+                linear-gradient(45deg, #cbd5e1 25%, transparent 25%),
+                linear-gradient(-45deg, #cbd5e1 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #cbd5e1 75%),
+                linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800">
+
+<div class="max-w-5xl mx-auto px-4 py-10">
+
+    <!-- Header -->
+    <header class="text-center mb-8">
+        <div class="inline-block bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            FREE ONLINE IMAGE TOOL
+        </div>
+
+        <h1 class="text-3xl md:text-4xl font-bold mb-3">
+            Favicon Generator
+        </h1>
+
+        <p class="text-slate-600 max-w-2xl mx-auto">
+            Tạo favicon cho website từ logo hoặc hình ảnh của bạn.
+            Hỗ trợ nhiều kích thước và tải toàn bộ bộ favicon chỉ với một lần nhấn.
+        </p>
+    </header>
+
+    <main class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-7">
+
+        <!-- Upload -->
+        <section>
+            <h2 class="text-xl font-bold mb-3">1. Tải ảnh logo lên</h2>
+
+            <div id="uploadArea"
+                class="upload-area rounded-2xl p-8 text-center cursor-pointer">
+
+                <div class="text-5xl mb-3">🖼️</div>
+
+                <p class="font-bold text-lg mb-2">
+                    Kéo thả ảnh vào đây
+                </p>
+
+                <p class="text-sm text-slate-500 mb-4">
+                    Hoặc nhấn nút bên dưới để chọn ảnh từ máy tính
+                </p>
+
+                <label for="fileInput"
+                    class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold cursor-pointer">
+                    Chọn hình ảnh
+                </label>
+
+                <input id="fileInput" type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/bmp"
+                    class="hidden">
+
+                <p class="text-xs text-slate-500 mt-4">
+                    Hỗ trợ PNG, JPG, WEBP, GIF, SVG, BMP
+                </p>
+            </div>
+
+            <div id="imageInfo"
+                class="hidden mt-4 bg-blue-50 rounded-xl p-4">
+                <div class="flex items-center gap-4">
+                    <div class="preview-bg rounded-lg p-2">
+                        <img id="sourcePreview"
+                            class="w-16 h-16 object-contain">
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                        <p id="fileName" class="font-semibold break-all"></p>
+                        <p id="imageDimensions" class="text-sm text-slate-500"></p>
+                    </div>
+
+                    <button id="removeImage"
+                        class="text-red-600 text-sm font-semibold">
+                        Xóa ảnh
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings -->
+        <section class="mt-8">
+            <h2 class="text-xl font-bold mb-3">2. Tùy chỉnh favicon</h2>
+
+            <div class="grid md:grid-cols-2 gap-5">
+
+                <div>
+                    <label class="block font-semibold mb-2">
+                        Chế độ hiển thị
+                    </label>
+
+                    <select id="fitMode"
+                        class="w-full border border-slate-300 rounded-lg p-3 bg-white">
+                        <option value="contain">Giữ toàn bộ ảnh (không cắt)</option>
+                        <option value="cover">Lấp đầy khung hình (có thể cắt)</option>
+                    </select>
+
+                    <p class="text-xs text-slate-500 mt-2">
+                        Ảnh vuông thường cho kết quả favicon tốt nhất.
+                    </p>
+                </div>
+
+                <div>
+                    <label class="block font-semibold mb-2">
+                        Màu nền
+                    </label>
+
+                    <div class="flex items-center gap-3">
+                        <input type="color" id="backgroundColor"
+                            value="#ffffff"
+                            class="w-14 h-12 border rounded cursor-pointer">
+
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" id="transparentBg" checked>
+                            Nền trong suốt (nếu định dạng hỗ trợ)
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Preview -->
+        <section class="mt-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">3. Xem trước các kích thước</h2>
+                <span id="previewStatus" class="text-sm text-slate-500">
+                    Chưa có ảnh
+                </span>
+            </div>
+
+            <div id="previewGrid"
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+
+                <div class="col-span-full text-center text-slate-400 py-8 border rounded-xl">
+                    Tải ảnh lên để xem trước favicon
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Generate -->
+        <section class="mt-8">
+            <h2 class="text-xl font-bold mb-3">4. Tạo và tải favicon</h2>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button id="generateBtn"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg disabled:opacity-50"
+                    disabled>
+                    Tạo bộ Favicon
+                </button>
+
+                <button id="downloadZipBtn"
+                    class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg disabled:opacity-50"
+                    disabled>
+                    Tải toàn bộ ZIP
+                </button>
+            </div>
+
+            <p id="statusMessage" class="text-sm text-slate-500 mt-3 text-center">
+                Vui lòng tải ảnh lên trước.
+            </p>
+        </section>
+
+        <!-- HTML code -->
+        <section id="codeSection" class="hidden mt-8 border-t pt-6">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-bold">5. Mã HTML chèn favicon</h2>
+
+                <button id="copyCodeBtn"
+                    class="bg-slate-800 hover:bg-slate-900 text-white text-sm px-4 py-2 rounded-lg">
+                    Sao chép mã
+                </button>
+            </div>
+
+            <pre id="htmlCode"
+                class="bg-slate-900 text-green-300 p-4 rounded-xl text-sm overflow-x-auto whitespace-pre-wrap"></pre>
+
+            <p class="text-sm text-slate-500 mt-3">
+                Sau khi tải ZIP, giải nén và đặt các file favicon cùng thư mục với file HTML.
+                Nếu website dùng thư mục khác, hãy sửa lại đường dẫn trong mã.
+            </p>
+        </section>
+
+        <!-- Guide -->
+        <section class="mt-8 bg-slate-50 rounded-xl p-5">
+            <h2 class="text-lg font-bold mb-3">Hướng dẫn sử dụng</h2>
+
+            <ol class="list-decimal pl-5 space-y-2 text-sm text-slate-600">
+                <li>Chọn ảnh logo hoặc biểu tượng từ máy tính.</li>
+                <li>Chọn cách hiển thị và màu nền mong muốn.</li>
+                <li>Xem trước các kích thước favicon.</li>
+                <li>Nhấn Tạo bộ Favicon.</li>
+                <li>Tải từng ảnh hoặc tải toàn bộ file ZIP.</li>
+                <li>Chèn đoạn mã HTML vào phần <code>&lt;head&gt;</code> của website.</li>
+            </ol>
+        </section>
+
+        <!-- Privacy -->
+        <div class="mt-6 bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-800">
+            <strong>Quyền riêng tư:</strong>
+            Hình ảnh được xử lý ngay trên trình duyệt của bạn.
+            Công cụ không tải ảnh lên máy chủ.
+        </div>
+
+    </main>
+
+    <footer class="text-center text-sm text-slate-500 mt-8">
+        Favicon Generator - Free Online Tool
+    </footer>
+
+</div>
+
+<script>
+    const fileInput = document.getElementById("fileInput");
+    const uploadArea = document.getElementById("uploadArea");
+    const sourcePreview = document.getElementById("sourcePreview");
+    const imageInfo = document.getElementById("imageInfo");
+
+    const generateBtn = document.getElementById("generateBtn");
+    const downloadZipBtn = document.getElementById("downloadZipBtn");
+
+    const previewGrid = document.getElementById("previewGrid");
+    const statusMessage = document.getElementById("statusMessage");
+
+    const fitMode = document.getElementById("fitMode");
+    const backgroundColor = document.getElementById("backgroundColor");
+    const transparentBg = document.getElementById("transparentBg");
+
+    const sizes = [16, 32, 48, 64, 128, 180, 192, 256, 512];
+
+    let originalFile = null;
+    let originalImage = null;
+    let originalDataURL = "";
+    let generatedFiles = {};
+    let previewURL = null;
+
+    // Chọn ảnh
+    fileInput.addEventListener("change", event => {
+        const file = event.target.files[0];
+
+        if (file) loadImage(file);
+    });
+
+    // Kéo thả ảnh
+    uploadArea.addEventListener("click", event => {
+        if (event.target.closest("label")) return;
+        fileInput.click();
+    });
+
+    uploadArea.addEventListener("dragover", event => {
+        event.preventDefault();
+        uploadArea.classList.add("dragover");
+    });
+
+    uploadArea.addEventListener("dragleave", () => {
+        uploadArea.classList.remove("dragover");
+    });
+
+    uploadArea.addEventListener("drop", event => {
+        event.preventDefault();
+        uploadArea.classList.remove("dragover");
+
+        const file = event.dataTransfer.files[0];
+
+        if (file) loadImage(file);
+    });
+
+    // Dán ảnh từ clipboard
+    document.addEventListener("paste", event => {
+        const items = event.clipboardData.items;
+
+        for (const item of items) {
+            if (item.type.startsWith("image/")) {
+                const file = item.getAsFile();
+                if (file) loadImage(file);
+                break;
+            }
+        }
+    });
+
+    // Đọc ảnh
+    function loadImage(file) {
+        if (!file.type.startsWith("image/")) {
+            alert("Vui lòng chọn một file hình ảnh hợp lệ.");
+            return;
+        }
+
+        if (file.size > 15 * 1024 * 1024) {
+            alert("Ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 15 MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = event => {
+            const img = new Image();
+
+            img.onload = () => {
+                originalFile = file;
+                originalImage = img;
+                originalDataURL = event.target.result;
+
+                document.getElementById("fileName").textContent = file.name;
+
+                document.getElementById("imageDimensions").textContent =
+                    img.naturalWidth + " × " + img.naturalHeight + " px";
+
+                sourcePreview.src = originalDataURL;
+                imageInfo.classList.remove("hidden");
+
+                generateBtn.disabled = false;
+
+                generatedFiles = {};
+                downloadZipBtn.disabled = true;
+                document.getElementById("codeSection").classList.add("hidden");
+
+                previewStatus.textContent = "Đang tạo bản xem trước";
+
+                renderPreviews();
+            };
+
+            img.onerror = () => {
+                alert("Không thể đọc ảnh. Hãy thử một file PNG, JPG hoặc WEBP khác.");
+            };
+
+            img.src = event.target.result;
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    // Vẽ ảnh lên canvas
+    function drawImageToCanvas(size) {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext("2d");
+
+        if (!transparentBg.checked) {
+            ctx.fillStyle = backgroundColor.value;
+            ctx.fillRect(0, 0, size, size);
+        }
+
+        const width = originalImage.naturalWidth;
+        const height = originalImage.naturalHeight;
+
+        let drawWidth;
+        let drawHeight;
+        let x;
+        let y;
+
+        if (fitMode.value === "cover") {
+            const scale = Math.max(size / width, size / height);
+
+            drawWidth = width * scale;
+            drawHeight = height * scale;
+
+            x = (size - drawWidth) / 2;
+            y = (size - drawHeight) / 2;
+        } else {
+            const scale = Math.min(size / width, size / height);
+
+            drawWidth = width * scale;
+            drawHeight = height * scale;
+
+            x = (size - drawWidth) / 2;
+            y = (size - drawHeight) / 2;
+        }
+
+        ctx.drawImage(originalImage, x, y, drawWidth, drawHeight);
+
+        return canvas;
+    }
+
+    // Tạo xem trước
+    function renderPreviews() {
+        previewGrid.innerHTML = "";
+
+        sizes.forEach(size => {
+            const canvas = drawImageToCanvas(size);
+            const previewURL = canvas.toDataURL("image/png");
+
+            const card = document.createElement("div");
+            card.className = "preview-card";
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "preview-bg rounded-lg p-4 flex justify-center items-center mb-3";
+
+            const img = document.createElement("img");
+            img.src = previewURL;
+            img.width = Math.min(size, 96);
+            img.height = Math.min(size, 96);
+            img.style.width = Math.min(size, 96) + "px";
+            img.style.height = Math.min(size, 96) + "px";
+            img.style.objectFit = "contain";
+
+            wrapper.appendChild(img);
+
+            const label = document.createElement("p");
+            label.className = "font-bold text-sm";
+            label.textContent = size + " × " + size;
+
+            const button = document.createElement("button");
+            button.className = "mt-2 text-xs text-blue-600 hover:underline";
+            button.textContent = "Tải PNG";
+
+            button.addEventListener("click", () => {
+                downloadBlob(
+                    canvas.toBlob.bind(canvas),
+                    "favicon-" + size + ".png"
+                );
+            });
+
+            card.appendChild(wrapper);
+            card.appendChild(label);
+            card.appendChild(button);
+
+            previewGrid.appendChild(card);
+        });
+
+        previewStatus.textContent = sizes.length + " kích thước";
+    }
+
+    // Tải blob từ canvas
+    function downloadBlob(toBlob, filename) {
+        toBlob(blob => {
+            if (!blob) {
+                alert("Không thể tạo file ảnh.");
+                return;
+            }
+
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = filename;
+            link.click();
+
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }, "image/png");
+    }
+
+    // Canvas thành PNG Blob
+    function canvasToBlob(canvas) {
+        return new Promise((resolve, reject) => {
+            canvas.toBlob(blob => {
+                if (blob) resolve(blob);
+                else reject(new Error("Không thể tạo ảnh PNG."));
+            }, "image/png");
+        });
+    }
+
+    // Chuyển Blob thành Data URL
+    async function blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+
+            reader.readAsDataURL(blob);
+        });
+    }
+
+    // Tạo file ICO từ các PNG
+    async function createICO(images) {
+        const count = images.length;
+
+        const headerSize = 6;
+        const entrySize = 16;
+
+        let imageOffset = headerSize + count * entrySize;
+        const entries = [];
+
+        for (const image of images) {
+            const bytes = new Uint8Array(await image.arrayBuffer());
+
+            const entry = new ArrayBuffer(entrySize);
+            const view = new DataView(entry);
+
+            view.setUint8(0, image.size === 256 ? 0 : image.size);
+            view.setUint8(1, image.size === 256 ? 0 : image.size);
+            view.setUint8(2, 0);
+            view.setUint8(3, 0);
+            view.setUint16(4, 1, true);
+            view.setUint16(6, 32, true);
+            view.setUint32(8, bytes.length, true);
+            view.setUint32(12, imageOffset, true);
+
+            entries.push(new Uint8Array(entry));
+            imageOffset += bytes.length;
+        }
+
+        const header = new ArrayBuffer(headerSize);
+        const headerView = new DataView(header);
+
+        headerView.setUint16(0, 0, true);
+        headerView.setUint16(2, 1, true);
+        headerView.setUint16(4, count, true);
+
+        const parts = [new Uint8Array(header), ...entries];
+
+        for (const image of images) {
+            parts.push(new Uint8Array(await image.arrayBuffer()));
+        }
+
+        return new Blob(parts, { type: "image/x-icon" });
+    }
+
+    // Tạo SVG chứa ảnh gốc
+    function createSVG() {
+        const width = originalImage.naturalWidth;
+        const height = originalImage.naturalHeight;
+
+        const svg = `
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="${width}" height="${height}"
+     viewBox="0 0 ${width} ${height}">
+    <image width="${width}" height="${height}"
+           xlink:href="${originalDataURL}"/>
+</svg>`;
+
+        return new Blob([svg], {
+            type: "image/svg+xml;charset=utf-8"
+        });
+    }
+
+    // Tạo bộ favicon
+    async function generateFavicons() {
+        if (!originalImage) return;
+
+        generateBtn.disabled = true;
+        downloadZipBtn.disabled = true;
+
+        statusMessage.textContent = "Đang tạo các kích thước favicon...";
+
+        try {
+            generatedFiles = {};
+
+            const pngImages = [];
+
+            for (const size of sizes) {
+                const canvas = drawImageToCanvas(size);
+                const blob = await canvasToBlob(canvas);
+
+                generatedFiles[`favicon-${size}.png`] = blob;
+
+                if ([16, 32, 48].includes(size)) {
+                    pngImages.push({ size, blob });
+                }
+            }
+
+            // Tạo ICO
+            const ico = await createICO(
+                pngImages.map(item => ({
+                    size: item.size,
+                    arrayBuffer: () => item.blob.arrayBuffer()
+                }))
+            );
+
+            generatedFiles["favicon.ico"] = ico;
+
+            // Apple Touch Icon
+            generatedFiles["apple-touch-icon.png"] =
+                generatedFiles["favicon-180.png"];
+
+            // SVG
+            generatedFiles["favicon.svg"] = createSVG();
+
+            // Web manifest
+            const manifest = {
+                name: "My Website",
+                short_name: "Website",
+                icons: [
+                    {
+                        src: "/favicon-192.png",
+                        sizes: "192x192",
+                        type: "image/png"
+                    },
+                    {
+                        src: "/favicon-512.png",
+                        sizes: "512x512",
+                        type: "image/png"
+                    }
+                ],
+                theme_color: "#ffffff",
+                background_color: "#ffffff",
+                display: "standalone"
+            };
+
+            generatedFiles["site.webmanifest"] =
+                new Blob(
+                    [JSON.stringify(manifest, null, 2)],
+                    { type: "application/manifest+json" }
+                );
+
+            // Mã HTML
+            const html = `<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.ico">
+
+<!-- Apple Touch Icon -->
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+<!-- Web App Manifest -->
+<link rel="manifest" href="site.webmanifest">
+
+<meta name="theme-color" content="#ffffff">`;
+
+            generatedFiles["favicon-html-code.txt"] =
+                new Blob([html], { type: "text/plain;charset=utf-8" });
+
+            document.getElementById("htmlCode").textContent = html;
+
+            document.getElementById("codeSection").classList.remove("hidden");
+
+            downloadZipBtn.disabled = false;
+
+            statusMessage.textContent =
+                "Đã tạo thành công " + Object.keys(generatedFiles).length +
+                " file favicon!";
+
+        } catch (error) {
+            console.error(error);
+            statusMessage.textContent =
+                "Có lỗi xảy ra khi tạo favicon: " + error.message;
+
+        } finally {
+            generateBtn.disabled = false;
+        }
+    }
+
+    generateBtn.addEventListener("click", generateFavicons);
+
+    // Tải toàn bộ ZIP
+    downloadZipBtn.addEventListener("click", async () => {
+        if (Object.keys(generatedFiles).length === 0) return;
+
+        if (typeof JSZip === "undefined") {
+            alert("Không tải được thư viện ZIP. Vui lòng kiểm tra kết nối Internet và thử lại.");
+            return;
+        }
+
+        downloadZipBtn.disabled = true;
+        statusMessage.textContent = "Đang đóng gói file ZIP...";
+
+        try {
+            const zip = new JSZip();
+
+            for (const [name, blob] of Object.entries(generatedFiles)) {
+                zip.file(name, blob);
+            }
+
+            const zipBlob = await zip.generateAsync({
+                type: "blob",
+                compression: "DEFLATE"
+            });
+
+            const url = URL.createObjectURL(zipBlob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = "favicon-package.zip";
+            link.click();
+
+            setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+            statusMessage.textContent = "Đã tải bộ favicon ZIP thành công!";
+
+        } catch (error) {
+            alert("Không thể tạo file ZIP: " + error.message);
+        } finally {
+            downloadZipBtn.disabled = false;
+        }
+    });
+
+    // Sao chép mã HTML
+    document.getElementById("copyCodeBtn").addEventListener("click", async () => {
+        const code = document.getElementById("htmlCode").textContent;
+
+        try {
+            await navigator.clipboard.writeText(code);
+            alert("Đã sao chép mã HTML!");
+        } catch (error) {
+            alert("Không thể sao chép. Vui lòng chọn mã và nhấn Ctrl + C.");
+        }
+    });
+
+    // Xóa ảnh
+    document.getElementById("removeImage").addEventListener("click", () => {
+        originalFile = null;
+        originalImage = null;
+        originalDataURL = "";
+        generatedFiles = {};
+
+        fileInput.value = "";
+
+        imageInfo.classList.add("hidden");
+        resultsReset();
+
+        generateBtn.disabled = true;
+        downloadZipBtn.disabled = true;
+
+        previewGrid.innerHTML = `
+            <div class="col-span-full text-center text-slate-400 py-8 border rounded-xl">
+                Tải ảnh lên để xem trước favicon
+            </div>`;
+
+        previewStatus.textContent = "Chưa có ảnh";
+        statusMessage.textContent = "Vui lòng tải ảnh lên trước.";
+    });
+
+    function resultsReset() {
+        document.getElementById("codeSection").classList.add("hidden");
+    }
+
+    // Thay đổi tùy chọn thì cập nhật preview và hủy bộ file cũ
+    [fitMode, backgroundColor, transparentBg].forEach(element => {
+        element.addEventListener("change", () => {
+            if (originalImage) {
+                renderPreviews();
+
+                generatedFiles = {};
+                downloadZipBtn.disabled = true;
+
+                document.getElementById("codeSection").classList.add("hidden");
+
+                statusMessage.textContent =
+                    "Tùy chọn đã thay đổi. Hãy tạo lại bộ favicon.";
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
